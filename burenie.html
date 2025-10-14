@@ -1,0 +1,71 @@
+<!-- Лэндинг: Бурение скважин Коломна и область -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Бурение скважин Коломна и область</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/small-device.css">
+</head>
+<body>
+    <!-- УТП -->
+    <section class="hero">
+        <h1>Бурение скважин в Коломне и области за 1 день</h1>
+        <p class="subtitle">Гарантия 5 лет · Оплата по факту · От 80 000 ₽</p>
+        <div class="cta-buttons">
+            <a href="#quiz" class="btn">Рассчитать стоимость</a>
+            <a href="#estimate" class="btn btn-grey">Пример сметы</a>
+            <a href="#form" class="btn btn-outline">Оставить заявку</a>
+        </div>
+    </section>
+
+    <!-- Квиз/Калькулятор -->
+    <section id="quiz">
+        <h2>Калькулятор стоимости бурения скважины</h2>
+        <div class="quiz-placeholder">
+            <!-- Здесь будет JS-квиз или вставка iframe -->
+            <p>Квиз/калькулятор появится здесь</p>
+        </div>
+    </section>
+
+    <!-- Отзывы/кейсы -->
+    <section id="reviews">
+        <h2>Отзывы и кейсы</h2>
+        <div class="reviews-list">
+            <div class="review">
+                <img src="img/photo1.png" alt="Фото клиента">
+                <p>"Спасибо за быстрое и качественное бурение! Вода чистая, всё работает отлично."<br><b>Иван Петров</b></p>
+            </div>
+            <div class="review">
+                <img src="img/photo2.png" alt="Фото клиента">
+                <p>"Скважину сделали за день, аккуратно, без грязи. Рекомендую!"<br><b>Мария Коломина</b></p>
+            </div>
+            <div class="review video">
+                <iframe width="320" height="180" src="https://www.youtube.com/embed/cJojkBeTUj0" frameborder="0" allowfullscreen></iframe>
+                <p>Видео-отзыв клиента</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Форма заявки -->
+    <section id="form">
+        <h2>Оставить заявку на бурение скважины</h2>
+        <form method="post" action="mail.php" class="order-form">
+            <input type="text" name="name" placeholder="Ваше имя" required>
+            <input type="tel" name="phone" placeholder="Телефон" required>
+            <input type="email" name="email" placeholder="E-mail">
+            <button type="submit">Отправить заявку</button>
+        </form>
+        <p class="form-desc">Мы свяжемся с вами в течение 5 минут!</p>
+    </section>
+
+    <!-- Блок другие услуги -->
+    <section id="other-services">
+        <h2>Другие услуги</h2>
+        <ul>
+            <li><a href="kanalizaciya.html">Канализация для загородных домов</a></li>
+            <li><a href="otoplenie.html">Отопление под ключ</a></li>
+        </ul>
+    </section>
+</body>
+</html>
