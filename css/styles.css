@@ -1887,6 +1887,9 @@ form.order-form button:hover {
 .block-team-table-small-device{
     display: none;
 }
+.block-team-list{
+	display: none; /* hide mobile list on desktop to avoid duplication */
+}
 #block-team {
 	margin: 60px 0 0;
 }
