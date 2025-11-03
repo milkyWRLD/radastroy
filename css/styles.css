@@ -445,9 +445,9 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	background: #fff;
+	background: #f8faff;
 	border-radius: 16px;
-	box-shadow: 0 2px 16px rgba(30,64,175,0.08);
+	box-shadow: 0 4px 20px rgba(30,64,175,0.08);
 	padding: 32px 24px 24px 24px;
 	margin-top: 10px;
 	margin-bottom: 10px;
@@ -539,10 +539,16 @@ form.order-form button:hover, .popup_present input[type="submit"]:hover {
 /* --- Современный header --- */
 .header-content-modern {
 	width: 100%;
-	background: linear-gradient(90deg, #23272f 80%, #334155 100%);
+	background: linear-gradient(90deg, #334155 80%, #334155 100%);
 	box-shadow: 0 2px 16px rgba(30,64,175,0.10);
 	padding: 0;
 	color: #fff;
+}
+
+/* Mobile-only elements: hide by default on desktop. Small-device.css enables them for small screens. */
+.burger-btn,
+.mobile-nav {
+    display: none;
 }
 .header-main {
 	max-width: 900px;
@@ -602,7 +608,7 @@ form.order-form button:hover, .popup_present input[type="submit"]:hover {
 /* --- Современный footer (в стиле header) --- */
 #footer {
 	width: 100%;
-	background: linear-gradient(90deg, #23272f 80%, #334155 100%);
+	background: linear-gradient(90deg, #334155 80%, #334155 100%);
 	color: #404654;
 	box-shadow: 0 -2px 16px rgba(30,64,175,0.10);
 }
@@ -740,7 +746,7 @@ form.order-form button:hover, .popup_present input[type="submit"]:hover {
 }
 
 .footer-oferta {
-	background: #1e293b;
+	background: linear-gradient(90deg, #334155 80%, #334155 100%);
 	padding: 16px 24px;
 	font-size: 0.85rem;
 	color: #cbd5e1;
@@ -963,18 +969,27 @@ form.order-form button:hover {
 	min-width: 180px;
 }
 
-/* Карта */
+/* Карта (Leaflet + OSM) */
 #map {
 	background: #fff;
-	border-radius: 18px;
-	box-shadow: 0 2px 16px rgba(30,64,175,0.06);
-	margin: 32px auto;
-	padding: 32px 24px;
-	max-width: 900px;
-}
-#yandex-map iframe {
 	border-radius: 12px;
-	border: none;
+	box-shadow: 0 2px 16px rgba(30,64,175,0.06);
+	margin: 24px auto;
+	padding: 0;
+	width: 100%;
+	max-width: 1200px;
+	min-height: 600px; /* desktop default */
+	height: 60vh;
+	box-sizing: border-box;
+}
+
+/* Section wrapper for the map to ensure spacing */
+#map-section {
+	padding: 24px 16px;
+}
+
+@media (max-width: 680px) {
+	#map { min-height: 420px; height: 50vh; border-radius: 10px; }
 }
 
 /* Плавающая плашка контактов */
@@ -1065,8 +1080,7 @@ form.order-form button:hover {
 	font-size: 16px;
 	font-weight: 400;
 }
-#header-image .center-block a.btn {
-}
+/* hero CTA overrides intentionally omitted to preserve default .btn styling */
 #header-image .center-block .kolomna {
 	background: url('../img/kolomna.png') no-repeat;
 	width: 164px;
@@ -1098,9 +1112,7 @@ form.order-form button:hover {
 
 /* ============================ block-services ================== */
 
-#block-services-small-device{
-    display: none;
-}
+/* #block-services-small-device removed from HTML; no styles needed */
 #block-services {
 	width: 840px;
 	margin: 0 auto;
@@ -1436,6 +1448,7 @@ form.order-form button:hover {
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-o-box-sizing: border-box;
+	box-sizing: border-box;
 	position: absolute;
 }
 #block-photos #galary  .img-item  .img-bg-text .context-title {	
@@ -2175,6 +2188,68 @@ form.order-form button:hover {
 	text-transform: uppercase;
 	letter-spacing: 2px;
 }
+/* Small centered media choice modal (appears above .overlay) */
+.popup_media_choice {
+	background-color: #fff;
+	color: #222;
+	display: none;
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1000000;
+	padding: 18px;
+	border-radius: 10px;
+	width: 360px;
+	max-width: 92%;
+	box-shadow: 0 10px 40px rgba(0,0,0,0.18);
+	text-align: center;
+}
+.popup_media_choice .media-title {
+	font-weight: 700;
+	margin-bottom: 8px;
+	font-size: 1.05rem;
+}
+.popup_media_choice .media-desc { color: #444; margin-bottom: 12px; }
+.popup_media_choice .btn-media-youtube,
+.popup_media_choice .btn-media-rutube { min-width: 140px; }
+@media (max-width: 480px) {
+	.popup_media_choice { width: 92%; padding: 12px; }
+	.popup_media_choice .btn-media-youtube,
+	.popup_media_choice .btn-media-rutube { min-width: 120px; font-size: 0.95rem; }
+}
+
+/* Media icon buttons inside the small modal */
+.media-icon-btn {
+	border: none;
+	background: transparent;
+	padding: 6px;
+	border-radius: 8px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.media-icon-btn img {
+	width: 44px;
+	height: 44px;
+	display: block;
+}
+.media-icon-btn:focus {
+	outline: 2px solid rgba(37,99,235,0.3);
+}
+
+/* Ensure close button sits above iframe content */
+.popup_video .close_popup {
+	z-index: 1000002;
+}
+.popup_media_choice .close_popup {
+	z-index: 1000002;
+}
+/* Hide Leaflet attribution (author credit) */
+.leaflet-control-attribution {
+	display: none !important;
+}
 .popup_present-form-elements {
 	text-align: center;
 	margin-top: 35px;
@@ -2235,6 +2310,57 @@ form.order-form button:hover {
 	font-size: 15px;
 	margin-top: 30px;
 	width: 280px;	
+}
+
+/* Floating contacts (desktop: icons + labels; mobile: icons only) */
+#floating-contacts.floating-contacts {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	z-index: 99999;
+	background: #fff;
+	padding: 10px 18px;
+	border-radius: 30px;
+	box-shadow: 0 6px 22px rgba(0,0,0,0.12);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	transition: transform .12s ease, box-shadow .12s ease;
+}
+#floating-contacts.floating-contacts:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.14); }
+#floating-contacts .fc-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: #2563eb;
+	font-weight: 600;
+	text-decoration: none;
+	background: transparent;
+}
+#floating-contacts .fc-icon {
+	width: 20px;
+	height: 20px;
+	display: block;
+}
+#floating-contacts .fc-label { font-size: 1.04rem; line-height: 1; }
+
+/* Desktop (larger icons and labels) */
+@media (min-width: 992px) {
+	#floating-contacts .fc-icon { width: 26px; height: 26px; }
+	#floating-contacts .fc-label { font-size: 1.12rem; }
+	#floating-contacts { padding: 12px 20px; }
+}
+
+/* Mobile: compact — only icons, hide labels */
+@media (max-width: 680px) {
+	#floating-contacts.floating-contacts {
+		right: 14px;
+		bottom: 14px;
+		padding: 8px;
+		border-radius: 999px;
+	}
+	#floating-contacts .fc-label { display: none !important; }
+	#floating-contacts .fc-icon { width: 30px; height: 30px; }
 }
 .popup_success {
 	text-align: center;
@@ -2494,3 +2620,122 @@ form.order-form button:hover {
     padding: 24px 2vw 24px 2vw;
   }
 }
+
+/* ========================= Unified block headings ========================= */
+/* Make block headings consistent and centered across desktop and mobile */
+h2,
+.title,
+.service-card-title,
+.social-invite-title,
+.trust-org-name,
+.review .context-title,
+.hero .title {
+	text-align: center;
+	font-family: 'Inter', 'Montserrat', Arial, sans-serif;
+	font-weight: 700;
+	color: #23272f;
+	margin: 0 0 16px 0;
+	line-height: 1.12;
+	/* base unified size for section headings */
+	font-size: 1.45rem; /* ~23px */
+}
+
+/* Hero title kept as originally defined earlier in the file to preserve layout and spacing */
+
+@media (max-width: 480px) {
+	h2,
+	.title,
+	.service-card-title,
+	.social-invite-title,
+	.trust-org-name,
+	.review .context-title,
+	.hero .title {
+		font-size: 1.05rem; /* compact size on small screens */
+		margin-bottom: 10px;
+	}
+}
+
+/* End unified headings */
+
+/* Restore original hero title styling (explicit override so hero remains unchanged) */
+#header-image .center-block .title {
+	font-size: 46px; /* original */
+	padding: 100px 0 0 0; /* original spacing */
+	line-height: 1.0em;
+	font-weight: 300; /* original light weight */
+	text-align: left; /* keep original left alignment inside hero */
+	color: #fff; /* hero was white on background image */
+}
+
+@media (max-width: 700px) {
+	#header-image .center-block .title {
+		font-size: 28px;
+		padding-top: 20px;
+		text-align: center; /* center on smaller screens for better layout */
+	}
+}
+
+/* ========================= Service modal styles ========================= */
+.service-modal { display: none; position: fixed; inset: 0; z-index: 12000; }
+.service-modal[aria-hidden="false"] { display: block; }
+.service-modal__backdrop { position: absolute; inset: 0; background: rgba(11,22,40,0.54); backdrop-filter: blur(2px); }
+.service-modal__panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 920px; max-width: 96%; /* remove internal scroll so modal content flows naturally */ max-height: none; overflow: visible; background: #fff; border-radius: 12px; box-shadow: 0 12px 48px rgba(11,22,40,0.35); }
+.service-modal__inner { padding: 22px; }
+.service-modal__close { position: absolute; right: 0px; top: 0px; background: transparent; border: none; font-size: 30px; color: #64748b; cursor: pointer; }
+
+/* unify buttons inside modals */
+.service-modal__panel .btn,
+.popup_present input[type="submit"],
+.popup_success .btn,
+.service-modal__panel .btn-outline {
+	font-family: 'Montserrat', Arial, sans-serif;
+	font-weight: 700;
+	font-size: 1rem;
+	padding: 10px 14px;
+	border-radius: 8px;
+}
+.service-modal__panel .btn-outline {
+	background: transparent;
+	border: 2px solid #e6eefc;
+	color: #2563eb;
+}
+.service-modal__header { text-align: left; padding-bottom: 8px; border-bottom: 1px solid #eef2ff; margin-bottom: 12px; }
+.service-modal__title { font-size: 1.6rem; margin: 0 0 6px 0; }
+.service-modal__subtitle { color: #64748b; margin: 0; }
+.service-modal__hero { height: 160px; background-size: cover; background-position: center; border-radius: 8px; margin-bottom: 12px; }
+.service-modal__desc { color: #334155; margin-bottom: 12px; }
+.service-modal__actions { display:flex; gap: 10px; align-items:center; margin-top: 12px; }
+.service-calc-form input[type="number"] { width: 140px; }
+.service-calc-btn { padding: 10px 14px; }
+
+@media (max-width: 700px) {
+	.service-modal__panel { width: calc(100% - 32px); left: 50%; top: 48%; transform: translate(-50%, -48%); }
+	.service-modal__header { text-align: center; }
+	.service-modal__title { font-size: 1.25rem; }
+	.service-modal__hero { height: 120px; }
+}
+
+/* Center calc and form inside modal */
+.service-modal__calc .calc-form-modern { margin: 0 auto; }
+.service-modal__contact .order-form input { width: 100%; box-sizing: border-box; }
+.service-modal__contact .order-form .btn { width: auto; }
+.service-modal__colorhead h2, .service-modal__colorhead p { text-align: center; }
+.service-modal__colorhead { box-shadow: 0 6px 18px rgba(37,99,235,0.12); }
+
+/* Make contact buttons visually identical */
+.service-modal__contact .btn, .service-modal__contact .btn-outline {
+	padding: 10px 18px;
+	border-radius: 8px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 160px;
+}
+.service-modal__contact .btn-outline {
+	background: #fff;
+	color: #2563eb;
+	border: 2px solid #2563eb;
+}
+.service-modal__contact .btn { background: linear-gradient(90deg,#2563eb,#1da1f2); color:#fff; border: none; }
+
+/* End service modal styles */

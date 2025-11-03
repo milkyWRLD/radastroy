@@ -10,6 +10,7 @@
 	<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" type="text/css" href="css/styles.css" />
 	<link rel="stylesheet" type="text/css" media="only screen and (max-width: 680px)" href="css/small-device.css" />
+	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 	<!--<link rel="stylesheet" type="text/css" media="only screen and (max-width: 960px)" href="css/medium-device.css" />!-->
     <!--=============== REMIXICONS ===============-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
@@ -22,6 +23,107 @@
 	<script src="js/jquery.placeholder.js"></script>	
 	<script src="js/jquery.form.min.js"></script>
 	<script src="js/scripts.js"></script>
+	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+	<script>
+		// Initialize Leaflet map centered on Kolomna after DOM is ready
+		document.addEventListener('DOMContentLoaded', function() {
+			try {
+				if (typeof L === 'undefined') {
+					var el = document.getElementById('map');
+					if (el) {
+						el.innerHTML = '<div style="padding:24px;color:#c00;">Ошибка: библиотека Leaflet не загрузилась. Проверьте подключение к интернету и CDN.</div>';
+					}
+					console.error('Leaflet (L) is not defined.');
+					return;
+				}
+
+				// create custom blue marker (#2563eb) as SVG to avoid external dependencies
+				const _iconColor = '#2563eb';
+				const _svg = `<?xml version="1.0" encoding="UTF-8"?>
+				<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 52' width='32' height='52'>
+				  <path d='M16 0C9 0 4 6 4 12c0 10 12 40 12 40s12-30 12-40c0-6-5-12-12-12z' fill='${_iconColor}'/>
+				  <circle cx='16' cy='14' r='6' fill='#fff' opacity='0.95'/>
+				</svg>`;
+				const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(_svg);
+				const blueIcon = L.icon({
+					iconUrl: svgUrl,
+					shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+					iconSize: [32, 52],
+					iconAnchor: [16, 52],
+					popupAnchor: [0, -45],
+					shadowSize: [41, 41]
+				});
+
+				// initialize map centered to show all points (will be adjusted by fitBounds)
+				const map = L.map('map').setView([55.125, 38.78], 10);
+
+				L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					attribution: '© OpenStreetMap'
+				}).addTo(map);
+
+								const points = [
+										{
+											coords: [55.0895, 38.7788],
+											name: 'Ново-Голутвин монастырь',
+											desc: 'Ремонт скважины на воду. В источнике были обнаружены нитраты, выполнили комплекс работ по ремонту и полной изоляции почвенных притоков.',
+											youtube: 'https://www.youtube.com/watch?v=NkdI9ztu2V0',
+											rutube: 'https://rutube.ru/video/be39e3537146bb6156e9d78664c1e2e9/'
+										},
+										{
+											coords: [55.0108, 38.9064],
+											name: 'Парфентьево (частный заказ)',
+											desc: 'Бурение скважины глубиной 25 метров для частного клиента. Вода подходит для постоянного бытового использования.',
+											youtube: 'https://www.youtube.com/watch?v=NkdI9ztu2V0',
+											rutube: 'https://rutube.ru/video/be39e3537146bb6156e9d78664c1e2e9/'
+										},
+										{
+											coords: [55.0427, 38.9312],
+											name: 'Липитино — гостевой дом «Йога Дача»',
+											desc: 'Бурение скважины и установка септика для гостевого дома.',
+											youtube: 'https://www.youtube.com/watch?v=NkdI9ztu2V0',
+											rutube: 'https://rutube.ru/video/be39e3537146bb6156e9d78664c1e2e9/'
+										},
+										{
+											coords: [55.0843, 38.84],
+											name: 'Щурово — Троицкий храм',
+											desc: 'Бурение и обустройство двух скважин — для воскресной школы и детского приюта.',
+											youtube: 'https://www.youtube.com/watch?v=NkdI9ztu2V0',
+											rutube: 'https://rutube.ru/video/be39e3537146bb6156e9d78664c1e2e9/'
+										},
+										{
+											coords: [55.3170, 38.7315],
+											name: 'Губино, Воскресенский район',
+											desc: 'В колодце закончилась вода. Пробурили новую скважину глубиной 70 метров для круглогодичного использования.',
+											youtube: 'https://www.youtube.com/watch?v=NkdI9ztu2V0',
+											rutube: 'https://rutube.ru/video/be39e3537146bb6156e9d78664c1e2e9/'
+										}
+								];
+
+				const markers = [];
+				points.forEach(p => {
+					const m = L.marker(p.coords, { icon: blueIcon }).addTo(map);
+					m.bindPopup(`<b>${p.name}</b><br>${p.desc}`);
+					// click opens media choice modal (passes youtube and rutube links)
+					m.on('click', function(){
+						// open modal to choose platform
+						showMediaChoice(p.youtube, p.rutube, p.name);
+					});
+					m.on('mouseover', function(){ this.openPopup(); });
+					m.on('mouseout', function(){ this.closePopup(); });
+					markers.push(m);
+				});
+
+				// fit bounds so markers are visible and not overlapped, with padding
+				try {
+					const group = L.featureGroup(markers);
+					map.fitBounds(group.getBounds().pad(0.15));
+				} catch(e) { try { map.invalidateSize(); } catch(_){} }
+			} catch (e) {
+				console.error('Leaflet init error', e);
+			}
+		});
+	</script>
     <!--Google Tag Manager-->
     <script>
         (function(w, d, s, l, i) {
@@ -72,6 +174,38 @@
 				</div>
 				<button class="btn btn-call header-btn-call">Заказать звонок</button>
 			</div>
+			<!-- Mobile burger button (visible on small devices via CSS) -->
+			<button class="burger-btn" aria-expanded="false" aria-controls="mobile-nav" aria-label="Меню">
+				<span class="burger-box"><span class="burger-line"></span></span>
+			</button>
+			<!-- Mobile navigation overlay -->
+			<nav id="mobile-nav" class="mobile-nav" aria-hidden="true">
+				<div class="mobile-nav-panel" role="navigation">
+					<button class="mobile-nav-close" aria-label="Закрыть меню">×</button>
+					<ul>
+						<li><a href="/">Главная</a></li>
+						<li><a href="#other-services">Услуги</a></li>
+						<li><a href="#map-section">Карта</a></li>
+						<li><a href="#quiz">Калькулятор</a></li>
+						<li><a href="#block-whywe">Почему мы</a></li>
+						<li><a href="#floating-contacts">Контакты</a></li>
+					</ul>
+
+					<!-- Contacts moved to mobile nav for small screens -->
+					<div class="mobile-nav-contacts" aria-label="Контакты">
+						<div class="mobile-contact-item">
+							<a href="tel:89150255285">8 915 025-52-85</a>
+						</div>
+						<div class="mobile-contact-item">
+							<a href="tel:89262203366">8 926 220-33-66</a>
+						</div>
+						<div class="mobile-contact-item">
+							<a href="mailto:rada-stroy@mail.ru">rada-stroy@mail.ru</a>
+						</div>
+						<div class="mobile-contact-item worktime">ПН-ПТ <b>9:00-18:00</b></div>
+					</div>
+				</div>
+			</nav>
 		</header>
 
 		<div id="header-image">
@@ -97,22 +231,59 @@
 			</ul>
 		</section>
 
+		<!-- Service modal (hidden by default) -->
+		<div id="service-modal" class="service-modal" aria-hidden="true">
+			<div class="service-modal__backdrop"></div>
+			<div class="service-modal__panel">
+				<button class="service-modal__close" aria-label="Close">×</button>
+				<div class="service-modal__inner">
+					<!-- Colored header (no photo) -->
+					<div class="service-modal__colorhead" style="background: linear-gradient(90deg,#2563eb,#1da1f2); padding:18px; border-radius:8px; color:#fff; margin-bottom:14px; text-align:center;">
+						<h2 class="service-modal__title" style="margin:0; color:#fff;">Услуга</h2>
+					</div>
+					<section class="service-modal__content">
+						<div class="service-modal__body">
+							<div class="service-modal__desc"></div>
+							<!-- Centered calculator (use main site's form style) -->
+							<div class="service-modal__calc" style="display:flex;justify-content:center;margin-top:12px;">
+								<form class="calc-form-modern service-calc-form" style="max-width:420px;width:100%;">
+									<div style="text-align:center;font-weight:600;margin-bottom:8px;">Мы рассчитываем ориентировочную стоимость на основе выбранной услуги и площади</div>
+									<label for="service-area">Площадь объекта (м²)</label>
+									<input id="service-area" name="area" type="number" value="100" min="1">
+									<select name="service-type" class="hidden-select" style="display:none;">
+										<option value="well">Бурение</option>
+										<option value="heating">Отопление</option>
+										<option value="sewer">Канализация</option>
+										<option value="water">Водоснабжение</option>
+									</select>
+									<button type="button" class="btn service-calc-btn">Рассчитать</button>
+									<div class="service-calc-result form-desc" style="margin-top:10px;text-align:center;"></div>
+								</form>
+							</div>
+							<!-- Contact form: email or call -->
+							<!-- Contact actions removed from service modal (use main contact popup instead) -->
+						</div>
+					</section>
+				</div>
+			</div>
+		</div>
+
 
 		<!-- Блок с ссылками на лендинги -->
 		<section id="other-services">
 			<h2>Наши услуги</h2>
 			<div class="services-cards">
-				<a href="burenie.html" class="service-card" aria-label="Бурение скважин Коломна и область">
+				<a href="burenie.html" class="service-card" data-type="well" aria-label="Бурение скважин Коломна и область">
 					<div class="service-card-icon"><img src="img/service3.png" alt="Бурение скважин"></div>
 					<div class="service-card-title">Бурение скважин</div>
 					<div class="service-card-desc">Вода в вашем доме за 1 день. Гарантия, договор, опытные мастера.</div>
 				</a>
-				<a href="kanalizaciya.html" class="service-card" aria-label="Канализация для загородных домов">
+				<a href="kanalizaciya.html" class="service-card" data-type="sewer" aria-label="Канализация для загородных домов">
 					<div class="service-card-icon"><img src="img/service2.png" alt="Канализация"></div>
 					<div class="service-card-title">Канализация</div>
 					<div class="service-card-desc">Септики, автономные системы, монтаж под ключ для частных домов.</div>
 				</a>
-				<a href="otoplenie.html" class="service-card" aria-label="Отопление под ключ">
+				<a href="otoplenie.html" class="service-card" data-type="heating" aria-label="Отопление под ключ">
 					<div class="service-card-icon"><img src="img/service1.png" alt="Отопление"></div>
 					<div class="service-card-title">Отопление</div>
 					<div class="service-card-desc">Проектирование и монтаж систем отопления любой сложности.</div>
@@ -120,22 +291,21 @@
 			</div>
 		</section>
 
-		<!-- Карта Яндекс -->
-		<section id="map">
-			<h2>Наши объекты на карте</h2>
-			<div style="width:100%;height:400px;" id="yandex-map">
-				<!-- Вставьте код Яндекс.Карты с метками через конструктор -->
-				<iframe src="https://yandex.ru/map-widget/v1/?um=constructor%3Aexample" width="100%" height="400" frameborder="0"></iframe>
-			</div>
+		<!-- Карта: Leaflet + OpenStreetMap -->
+		<section id="map-section">
+			<h2>Карта наших объектов</h2>
+			<div id="map" style="width:100%; height:600px;"></div>
 		</section>
 
 		<!-- Плавающая плашка контактов -->
-		<div id="floating-contacts" style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#fff;padding:10px 20px;border-radius:30px;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;gap:15px;align-items:center;">
-			<a href="tel:89150255285" style="color:#2563eb;font-weight:600;font-size:1.08rem;display:flex;align-items:center;gap:6px;">
-				<img src="img/phone1.png" alt="Позвонить" style="height:18px;width:18px;">Позвонить
+		<div id="floating-contacts" class="floating-contacts">
+			<a href="tel:89150255285" class="fc-link">
+				<img src="img/phone1.png" alt="Позвонить" class="fc-icon">
+				<span class="fc-label">Позвонить</span>
 			</a>
-			<a href="mailto:rada-stroy@mail.ru" style="color:#2563eb;font-weight:600;font-size:1.08rem;display:flex;align-items:center;gap:6px;">
-				<img src="img/mail.png" alt="Написать" style="height:18px;width:18px;">Написать
+			<a href="mailto:rada-stroy@mail.ru" class="fc-link">
+				<img src="img/mail.png" alt="Написать" class="fc-icon">
+				<span class="fc-label">Написать</span>
 			</a>
 		</div>
 		</div>
@@ -193,30 +363,7 @@
 			<div class="clear"></div>
 		</div> -->
         
-		<div id="block-services-small-device">
-			<table>
-				<tr>
-					<td class="image"><img src="img/service1.png" /></td>
-				</tr>
-				<tr>
-					<td class="bold">Отопление</td>
-				</tr>
-				<tr>
-					<td class="title">Монтаж котлов, проектирование и монтаж систем отопления. <i>Текст уточняется…</i></td>
-				</tr>
-				<tr>
-					<td class="image"><img src="img/service2.png" /></td>
-				</tr>
-				<tr><td class="bold">Канализация</td></tr>
-				<tr><td class="title">Септики, автономные системы, монтаж под ключ. <i>Текст уточняется…</i></td></tr>
-				<tr>
-					<td class="image"><img src="img/service3.png" /></td>
-				</tr>
-				<tr><td class="bold">Бурение скважин на воду</td></tr>
-				<tr><td class="title">Бурение и обустройство скважин. <i>Текст уточняется…</i></td></tr>
-			</table>
-			<div class="clear"></div>
-		</div>
+		<!-- block-services-small-device removed as requested -->
 		
 		<!-- Блок спецтехники удалён по ТЗ -->
 		
@@ -234,10 +381,10 @@
 			<div class="small-description">Знаем особенности грунта и местности • Оперативно выезжаем • Низкие транспортные издержки<br/>Налаженные связи с карьерами и спецтехникой</div>
 			<table id="whywe-table">
 				<tr>
-					<td class="image"><img src="img/whywe1.png" /></td>
-					<td class="image"><img src="img/whywe2.png" /></td>
-					<td class="image"><img src="img/whywe3.png" /></td>
-					<td class="image"><img src="img/whywe4.png" /></td>
+					<td class="image"><img src="img/price.png" /></td>
+					<td class="image"><img src="img/wallet.png" /></td>
+					<td class="image"><img src="img/team.png" /></td>
+					<td class="image"><img src="img/phone-call.png" /></td>
 				</tr>
 				<tr>
 					<td class="title">Честная цена.<br/>Нет раздутого штата и дорогой рекламы, только бригады мастеров своего дела</td>
@@ -246,38 +393,36 @@
 					<td class="title">Всегда на связи.<br/>Решаем любой вопрос по эксплуатации быстро и качественно</td>			
 				</tr>
 			</table>
-            <table id="whywe-table-small-device">
-				<tr>
-					<td class="image"><img src="img/whywe1.png" /></td>
-					<td class="image"><img src="img/whywe2.png" /></td>
-				</tr>
-				<tr>
-					<td class="title">
-                        <p>Честная цена.<br/>Нет раздутого штата и дорогой рекламы, только бригады мастеров своего дела</p>
-                    </td>
-					<td class="title">
-                        <p>
-                        В своей работе мы не навязываем дорогие марки и технологии, потому что зарабатываем на услугах.
-                        </p>
-                    </td>
-				</tr>
-                <tr>
-					<td class="image"><img src="img/whywe3.png" /></td>
-					<td class="image"><img src="img/whywe4.png" /></td>
-                </tr>
-                <tr>
-					<td class="title">
-                        <p>
-                        В нашей команде есть все специалисты для обустройство дома<br/>«под ключ»: сварщики, электрики, отделочники.
-                        </p>
-                    </td>
-					<td class="title">
-                        <p>
-                        Всегда на связи.<br/>Решаем любой вопрос по эксплуатации быстро и качественно
-                        </p>
-                    </td>
-                </tr>
-			</table>
+			<div id="whywe-table-small-device" class="why-list">
+				<div class="why-item">
+					<div class="why-icon"><img src="img/price.png" alt="Цена"></div>
+					<div class="why-body">
+						<div class="why-title">Честная цена.</div>
+						<div class="why-text">Нет раздутого штата и дорогой рекламы, только бригады мастеров своего дела</div>
+					</div>
+				</div>
+				<div class="why-item">
+					<div class="why-icon"><img src="img/wallet.png" alt="Экономия"></div>
+					<div class="why-body">
+						<div class="why-title">Рациональный выбор</div>
+						<div class="why-text">В своей работе мы не навязываем дорогие марки и технологии, потому что зарабатываем на услугах.</div>
+					</div>
+				</div>
+				<div class="why-item">
+					<div class="why-icon"><img src="img/team.png" alt="Команда"></div>
+					<div class="why-body">
+						<div class="why-title">Профессиональная команда</div>
+						<div class="why-text">В нашей команде есть все специалисты для обустройство дома «под ключ»: сварщики, электрики, отделочники.</div>
+					</div>
+				</div>
+				<div class="why-item">
+					<div class="why-icon"><img src="img/phone-call.png" alt="Связь"></div>
+					<div class="why-body">
+						<div class="why-title">Всегда на связи</div>
+						<div class="why-text">Решаем любой вопрос по эксплуатации быстро и качественно</div>
+					</div>
+				</div>
+			</div>
 		</div>
 				
 		<div id="block-photos">
@@ -879,45 +1024,31 @@
 					</td>
 				</tr>
 			</table>
-            <table class="block-team-table-small-device">
-				<tr>
-					<td class="logo">
-                        <div><img src="img/_teamUser2.jpg" /></div>
-                    </td>
-				</tr>
-				<tr>
-					<td>
-						<div class="title">Алексей</div>
-						<div class="description">Мастер монтажник</div>
-					</td>
-				</tr>
-                <tr>
-                    <td class="logo">
-                        <div><img src="img/_teamUser3.jpg" /></div>
-                    </td>					
-                    </tr>
-                <tr><td class="center">
-						<div class="title">Дмитрий</div>
-						<div class="description">Мастер монтажник</div>
-					</td></tr>
-                <tr>					
-                    <td class="logo">
-                        <div><img src="img/_teamUser1.jpg" /></div>
-                    </td>
-                </tr>
-                <tr>					
-                    <td>
-						<div class="title">Павел</div>
-						<div class="description">Мастер монтажник</div>
-					</td>
-                </tr>
-			</table>
+			<div class="block-team-list">
+				<div class="team-item">
+					<div class="logo"><div><img src="img/_teamUser2.jpg" alt="Алексей"></div></div>
+					<div class="title">Алексей</div>
+					<div class="description">Мастер монтажник</div>
+				</div>
+				<div class="team-item">
+					<div class="logo"><div><img src="img/_teamUser3.jpg" alt="Дмитрий"></div></div>
+					<div class="title">Дмитрий</div>
+					<div class="description">Мастер монтажник</div>
+				</div>
+				<div class="team-item">
+					<div class="logo"><div><img src="img/_teamUser1.jpg" alt="Павел"></div></div>
+					<div class="title">Павел</div>
+					<div class="description">Мастер монтажник</div>
+				</div>
+			</div>
 		</div>		
 	<div id="block-anyquestions">
 			<div class="title">Остались вопросы? Звоните или пишите!</div>
-			<div class="phone"><a href="tel:89150255285">8 915 025-52-85</a> •<a href="tel:89262203366"> 8 926 220-33-66</a></div>
-			<div class="email">rada-stroy@mail.ru</div>			
-		</div>
+			<div class="contact-row">
+				<div class="phone"><a href="tel:89150255285">8 915 025-52-85</a> • <a href="tel:89262203366">8 926 220-33-66</a></div>
+				<div class="email">rada-stroy@mail.ru</div>
+			</div>
+	</div>
 
 		</section>
 		<!--<div id="block-video">
@@ -979,15 +1110,17 @@
 	<div class="overlay"></div>
 		
 	<div class="popup_present">
-		<div class="close_popup"></div>
 		<div class="title">Напишите нам</div>
 		<form id="popup_present_form" method="post" action="/mail.php">
 			<div class="popup_present-form-elements">
 				<div><input type="text" value="" name="name" placeholder="ИМЯ" /></div>
 				<div><input type="text" value="" name="phone" placeholder="ТЕЛЕФОН" /></div>
+				<!-- hidden contextual fields populated when opened from service modal -->
+				<input type="hidden" name="service_requested" value="">
+				<input type="hidden" name="to" value="">
 				<div><input type="submit" id="submitPresentForm" value="Отправить" onclick="ga('send', 'event', 'forma', 'zakaz'); yaCounter38407175.reachGoal('zakaz'); return true;"></div>
-			</div>			
-		</form>	
+			</div>            
+		</form>    
 		<div class="popup_present-form-description">Наш менеджер свяжется с вами в ближайшее время</div>
 	</div>
 	
@@ -1001,6 +1134,24 @@
 	<div class="popup_video">
 		<div class="close_popup"></div>
 		<div id="video-content"><iframe width="607" height="350" src="" frameborder="0" allowfullscreen></iframe></div>
+	</div>
+
+	<!-- Media choice modal: ask user where to open video -->
+	<div class="popup_media_choice" style="display:none;">
+		<div class="close_popup"></div>
+		<div style="padding:20px;max-width:600px;text-align:center;">
+			<div class="media-title" style="font-weight:700;margin-bottom:12px;">Открыть видео</div>
+			<div class="media-desc" style="margin-bottom:16px;color:#444;">Выберите платформу для просмотра видео по этому объекту</div>
+			<div style="display:flex;gap:12px;justify-content:center;align-items:center;">
+				<!-- Use local project icons for platforms -->
+				<button class="media-icon-btn btn-media-youtube" aria-label="Открыть на YouTube" title="Открыть на YouTube">
+					<img src="img/youtube-sign-logo.svg" alt="YouTube">
+				</button>
+				<button class="media-icon-btn btn-media-rutube" aria-label="Открыть на RuTube" title="Открыть на RuTube">
+					<img src="img/rutube-sign-logo.svg" alt="RuTube">
+				</button>
+			</div>
+		</div>
 	</div>
 
 <!-- Yandex.Metrika counter -->
