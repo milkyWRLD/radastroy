@@ -989,13 +989,15 @@ form.order-form button:hover {
 }
 
 @media (max-width: 680px) {
-	#map { min-height: 420px; height: 50vh; border-radius: 10px; }
+	#map { min-height: 280px; height: 35vh; border-radius: 10px; }
 }
 
 /* Плавающая плашка контактов */
 #floating-contacts {
 	font-family: 'Inter', Arial, sans-serif;
-	background: #fff;
+	background: rgba(255, 255, 255, 0.15);
+	backdrop-filter: blur(8px);
+	border: 1px solid rgba(255, 255, 255, 0.3);
 	border-radius: 30px;
 	box-shadow: 0 2px 8px rgba(30,64,175,0.10);
 	padding: 10px 24px;
@@ -1760,19 +1762,23 @@ form.order-form button:hover {
 #block-pricelist .price-item {
 	width: 280px;
 	padding: 0 10px 10px 10px;
-	display: block;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
 	font-size: 15px;
-	margin: 0 auto;
-	margin-bottom: 13px;
+	margin: 0 auto 13px auto;
 }
 
 #block-pricelist .price-item-bottom {
 	max-width: 400px;
 	padding: 0 10px 10px 10px;
-	display: block;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
 	font-size: 15px;
-	margin: 0 auto;
-	margin-bottom: 13px;
+	margin: 0 auto 13px auto;
 }
 #block-pricelist td.left-items .price-item{
 	margin: 0 0 13px 0;
@@ -1782,31 +1788,21 @@ form.order-form button:hover {
 }
 #block-pricelist .border-bottom {
 	margin-bottom: 0;
-}
-#block-pricelist .border-bottom:after {
-	content: '';
-	height: 1px;
-	width: 289px; 
-	margin: 10px 0 0;
-	display: block;
-	background: url("../img/line-sm.png")
+	padding-bottom: 10px;
+	border-bottom: 1px dotted #d0d0d0;
 }
 
-#block-pricelist .border-bottom-bottom:after {
-	content: '';
-	height: 1px;
-	max-width: 400px; 
-	margin: 10px 0 0;
-	display: block;
-	background: url("../img/line-sm.png")
+#block-pricelist .border-bottom-bottom {
+	padding-bottom: 10px;
+	border-bottom: 1px dotted #d0d0d0;
 }
 #block-pricelist .price-item .left {
-	float: left;
+	flex: 1;
 	max-width: 200px;
 	text-align: left;
 }
 #block-pricelist .price-item-bottom .left {
-	float: left;
+	flex: 1;
 	max-width: 300px;
 	text-align: left;
 }
@@ -1816,7 +1812,10 @@ form.order-form button:hover {
 	margin: 5px 0 0;
 }
 #block-pricelist .price-item .right {
-	float: right;
+	flex-shrink: 0;
+	white-space: nowrap;
+	margin-left: 10px;
+	font-weight: 600;
 }
 #block-pricelist .price-item-bottom .left span {
 	font-size: 13px;
@@ -1824,7 +1823,10 @@ form.order-form button:hover {
 	margin: 5px 0 0;
 }
 #block-pricelist .price-item-bottom .right {
-	float: right;
+	flex-shrink: 0;
+	white-space: nowrap;
+	margin-left: 10px;
+	font-weight: 600;
 }
 #block-pricelist .bonuses {
 	width: 840px;
@@ -2742,3 +2744,105 @@ h2,
 .service-modal__contact .btn { background: linear-gradient(90deg,#2563eb,#1da1f2); color:#fff; border: none; }
 
 /* End service modal styles */
+/* Модальное окно викторины */
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.modal-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(2px);
+}
+
+.modal-content {
+	position: relative;
+	z-index: 1001;
+	background: #fff;
+	padding: 32px;
+	border-radius: 16px;
+	max-width: 500px;
+	width: 90%;
+	max-height: 90vh;
+	overflow-y: auto;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+	animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+	from {
+		transform: translateY(30px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+.modal-close {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	width: 36px;
+	height: 36px;
+	border: none;
+	background: #f1f5f9;
+	border-radius: 8px;
+	font-size: 24px;
+	cursor: pointer;
+	color: #64748b;
+	transition: background 0.2s, color 0.2s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+}
+
+.modal-close:hover {
+	background: #e2e8f0;
+	color: #0f172a;
+}
+
+.quiz-modal-content ol li {
+	margin-bottom: 10px;
+}
+
+.quiz-modal-content code {
+	font-family: 'Courier New', monospace;
+	font-size: 0.9em;
+	word-break: break-all;
+}
+
+/* Responsive modal */
+@media (max-width: 680px) {
+	.modal-content {
+		padding: 24px;
+		width: 95%;
+		margin: 0 auto;
+	}
+	
+	.modal-close {
+		width: 32px;
+		height: 32px;
+		font-size: 20px;
+	}
+}

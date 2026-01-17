@@ -2,6 +2,8 @@
 
 $name=$_POST["name"];
 $phone=$_POST["phone"];
+$service_requested = isset($_POST["service_requested"]) ? $_POST["service_requested"] : "";
+$to = isset($_POST["to"]) ? $_POST["to"] : "K1Aleks@yandex.ru"; // Используем email из формы или по умолчанию
 
 if (isset ($name))
 {
@@ -39,19 +41,22 @@ echo "Ошибка ! Скрипту не были переданы параме�
 exit;
 }
 
-function sendMail($fname, $fphone) {
-	$to = "vash-montag24@mail.ru";
-	$subject = "Заявка с сайта РадаСтрой\n";
-	$message = "Поступила заявка с сайта РадаСтрой\n";
+function sendMail($fname, $fphone, $recipient, $service = "") {
+	$subject = "Заявка с сайта РадаСтрой";
+	$message = "Поступила заявка с сайта РадаСтрой\n\n";
 	$message .= "Имя: $fname\n";
 	$message .= "Телефон: $fphone\n";
-	$message .= "Письмо сгенерированно автоматический\n";
-	$header = "Content-type: text/plain; charset=\"utf-8\"";
+	if (!empty($service)) {
+		$message .= "Услуга: $service\n";
+	}
+	$message .= "\nПисьмо сгенерировано автоматически\n";
+	$header = "Content-type: text/plain; charset=\"utf-8\"\r\n";
+	$header .= "From: no-reply@site.ru\r\n";
 
-	mail ($to,$subject,$message,$header) or print "Не могу отправить письмо !!!";
+	mail($recipient, $subject, $message, $header) or print "Не могу отправить письмо !!!";
 }
 
-sendMail($name, $phone); //Отправляем на почту
+sendMail($name, $phone, $to, $service_requested); //Отправляем на почту
 
 exit;
 

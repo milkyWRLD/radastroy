@@ -12,74 +12,101 @@ function showPopupVideo(srcres) {
 }
 
 // show media choice modal and populate handlers
-function showMediaChoice(youtubeUrl, rutubeUrl, title) {
-	if (!youtubeUrl && !rutubeUrl) return;
-	$('.popup_media_choice .media-title').text('Видео — ' + (title || 'объект'));
+function showMediaChoice(youtubeUrl, rutubeUrl, vkUrl, title, desc) {
+	console.log('showMediaChoice called with:', {youtubeUrl, rutubeUrl, vkUrl, title, desc});
+	
+	// If no videos available, just return
+	if (!youtubeUrl && !rutubeUrl && !vkUrl) {
+		console.log('No video URLs available');
+		return;
+	}
+	
+	// Check if jQuery is available
+	if (typeof $ === 'undefined') {
+		console.error('jQuery is not available');
+		return;
+	}
+	
+	// Set title and description
+	try {
+		$('.popup_media_choice .media-title').text(title || 'Видео');
+		$('.popup_media_choice .media-desc').text(desc || '');
+		console.log('Title and description set');
+	} catch(e) {
+		console.error('Error setting title/description:', e);
+	}
 
 	// show overlay and modal with fade
-	$('.overlay').stop(true).fadeTo(speedPopupShow, 0.6);
-	$('.popup_media_choice').stop(true).fadeTo(speedPopupShow, 1).css('display','block');
-
-	// store urls on buttons for later
-	$('.btn-media-youtube').data('video', youtubeUrl || '');
-	$('.btn-media-rutube').data('video', rutubeUrl || '');
-
-	// unbind previous handlers and attach new ones
-	$('.btn-media-youtube').off('click').on('click', function(e){
-		e.preventDefault();
-		var url = $(this).data('video');
-		if (!url) return;
-		// try to form embed URL for common YouTube forms
-		var embed = url;
+	try {
+		console.log('speedPopupShow:', speedPopupShow);
+		$('.overlay').stop(true).fadeTo(speedPopupShow, 0.6);
+		$('.popup_media_choice').stop(true).fadeTo(speedPopupShow, 1).css('display','block');
+		console.log('Modal opened successfully');
+	} catch(e) {
+		console.error('Error opening modal:', e);
+		// Fallback: show modal without animation
 		try {
-			if (/youtube\.com\/watch/.test(url) || /youtu\.be\//.test(url) || /youtube\.com\/embed\//.test(url)) {
-				var id = null;
-				if (url.indexOf('v=') !== -1) {
-					id = url.split('v=')[1].split('&')[0];
-				} else if (url.indexOf('youtu.be/') !== -1) {
-					id = url.split('youtu.be/')[1].split('?')[0];
-				} else if (url.indexOf('embed/') !== -1) {
-					id = url.split('embed/')[1].split('?')[0];
-				}
-				if (id) embed = 'https://www.youtube.com/embed/' + id + '?rel=0&autoplay=1';
-			}
-		} catch(err) { /* ignore and use raw url */ }
-		showPopupVideo(embed);
-		// hide media choice
-		$('.popup_media_choice').fadeTo(120, 0, function(){ $(this).hide(); });
-		$('.overlay').fadeTo(120, 0, function(){ $(this).hide(); });
-	});
-
-	$('.btn-media-rutube').off('click').on('click', function(e){
-		e.preventDefault();
-		var url = $(this).data('video');
-		if (!url) return;
-		var embed = url;
-		var canEmbed = false;
-		try {
-			if (/rutube\.ru\/video\//.test(url)) {
-				var id = url.split('rutube.ru/video/')[1].replace(/\/$/, '').split('?')[0];
-				if (id) {
-					embed = 'https://rutube.ru/play/embed/' + id;
-					canEmbed = true;
-				}
-			} else if (/rutube\.ru\/play\/embed\//.test(url)) {
-				canEmbed = true;
-			}
-		} catch(err) { canEmbed = false; }
-
-		if (canEmbed) {
-			// try to embed inside site
-			showPopupVideo(embed);
-		} else {
-			// fallback: open original URL in a new tab so user can view it
-			window.open(url, '_blank');
+			$('.overlay').show();
+			$('.popup_media_choice').show();
+		} catch(e2) {
+			console.error('Fallback also failed:', e2);
 		}
+		return;
+	}
 
-		$('.popup_media_choice').fadeTo(120, 0, function(){ $(this).hide(); });
-		$('.overlay').fadeTo(120, 0, function(){ $(this).hide(); });
-	});
+	// Hide all buttons first
+	try {
+		$('.btn-media-youtube, .btn-media-rutube, .btn-media-vk').hide();
+	} catch(e) {
+		console.error('Error hiding buttons:', e);
+	}
+
+	// Show and configure YouTube button if available
+	if (youtubeUrl) {
+		console.log('Adding YouTube button');
+		try {
+			$('.btn-media-youtube').show().off('click').on('click', function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				window.open(youtubeUrl, '_blank');
+				closeAllPopup();
+			});
+		} catch(e) {
+			console.error('Error setting up YouTube button:', e);
+		}
+	}
+
+	// Show and configure RuTube button if available
+	if (rutubeUrl) {
+		console.log('Adding RuTube button');
+		try {
+			$('.btn-media-rutube').show().off('click').on('click', function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				window.open(rutubeUrl, '_blank');
+				closeAllPopup();
+			});
+		} catch(e) {
+			console.error('Error setting up RuTube button:', e);
+		}
+	}
+
+	// Show and configure VK button if available
+	if (vkUrl) {
+		console.log('Adding VK button');
+		try {
+			$('.btn-media-vk').show().off('click').on('click', function(e){
+				e.preventDefault();
+				e.stopPropagation();
+				window.open(vkUrl, '_blank');
+				closeAllPopup();
+			});
+		} catch(e) {
+			console.error('Error setting up VK button:', e);
+		}
+	}
 }
+
 function closeAllPopup() {
 	$('.overlay, .popup_present, .popup_video, .popup_success, .popup_media_choice').fadeTo(speedPopupShow, 0, function() {
 		$("#video-content iframe").attr("src", "");
@@ -113,7 +140,8 @@ $(function() {
 
 		$(".btn, .btn-img, .btn-call").click(function(e){
 			// Исключение для кнопок слайдера отзывов и калькулятора и кнопки расчёта в модале
-			if ($(this).is('#prev-review, #next-review, #calc-form button, .service-calc-btn')) return;
+			// Также исключаем кнопки викторины и ссылку на открытие бота
+			if ($(this).is('#prev-review, #next-review, #calc-form button, .service-calc-btn, #quiz-btn, #quiz-copy-email, #quiz-copy-code, #quiz-open-bot')) return;
 			e.preventDefault();
 			showPopupPresent();
 		});
@@ -268,7 +296,7 @@ $(function() {
 			startX = null;
 		});
 
-		// Калькулятор стоимости (современная логика)
+		// Калькулятор стоимости (современная логика с актуальными ценами)
 		// Расчет стоимости по типу услуги, площади и дополнительным опциям
 		$("#calc-form").on("submit", function(e){
 			e.preventDefault();
@@ -276,22 +304,73 @@ $(function() {
 			const service = $(this).find('[name="service"]').val();
 			const area = parseInt($(this).find('[name="area"]').val(), 10);
 			const option = $(this).find('[name="options"]').val();
-			let base = 0, perM2 = 0;
-			// Базовые цены и цена за м2
+			let baseCost = 0, description = '';
+			
+			// Актуальные цены на основе прайс-листа
 			switch(service) {
-				case 'well': base = 80000; perM2 = 100; break;
-				case 'heating': base = 50000; perM2 = 350; break;
-				case 'sewer': base = 40000; perM2 = 200; break;
-				case 'water': base = 30000; perM2 = 120; break;
+				case 'well':
+					// Обустройство скважины (скважинный адаптер) от 32.000 р
+					baseCost = 32000;
+					description = 'Обустройство скважины со скважинным адаптером';
+					break;
+				case 'heating':
+					// Монтаж и обвязка котла отопления электрического (мини-котельная) от 14.000 р
+					baseCost = 14000 + (area > 150 ? 5000 : 0); // добавка за большую площадь
+					description = 'Монтаж и обвязка котла отопления электрического';
+					break;
+				case 'sewer':
+					// Монтаж септика-отстойника, пластик от 27.000 р
+					baseCost = 27000 + (area > 200 ? 8000 : 0); // добавка за большую площадь
+					description = 'Монтаж септика-отстойника';
+					break;
+				case 'water':
+					// Монтаж точки водоразбора от 1.900 р + базовые работы
+					baseCost = 3500 + (area * 15); // 15р за кв.м на разводку
+					description = 'Система водоснабжения с монтажом точек разбора';
+					break;
 			}
-			let price = base + area * perM2;
+			
+			let price = baseCost;
+			let discount = 0;
+			
 			// Обработка дополнительных опций
-			if(option === 'fast') price += 10000;
-			if(option === 'warranty') price += 7000;
+			if(option === 'fast') {
+				price += 5000;
+				description += ' + срочный выезд';
+			}
+			if(option === 'warranty') {
+				price += 3500;
+				description += ' + увеличенная гарантия';
+			}
+			
+			// Скидка при больших объемах (более 150k)
+			if(price > 150000) {
+				discount = Math.floor(price * 0.05); // 5% скидка
+				price -= discount;
+				description += ' (применена скидка 5%)';
+			}
+			
+			// Форматирование и вывод результата с разбивкой
+			let resultText = '<strong style="font-size: 1.3em; color: #2563eb;">Ориентировочная стоимость:</strong><br>';
+			resultText += baseCost.toLocaleString('ru-RU') + ' ₽ (базовая стоимость)';
+			
+			if(option !== 'none') {
+				let optionCost = (option === 'fast' ? 5000 : 3500);
+				resultText += '<br>' + optionCost.toLocaleString('ru-RU') + ' ₽ (опция)';
+			}
+			
+			if(discount > 0) {
+				resultText += '<br><span style="color: #22c55e;">-' + discount.toLocaleString('ru-RU') + ' ₽ (скидка)</span>';
+			}
+			
+			resultText += '<br><hr style="margin: 8px 0; border: none; border-top: 1px solid #cbd5e1;">';
+			resultText += '<strong style="font-size: 1.2em;">Итого: ' + price.toLocaleString('ru-RU') + ' ₽</strong>';
+			resultText += '<br><small style="color: #64748b;">' + description + '</small>';
+			
 			// Плавный вывод результата
-			$("#calc-result").hide().text('Ориентировочная стоимость: ' + price.toLocaleString('ru-RU') + ' ₽').fadeIn(200);
+			$("#calc-result").hide().html(resultText).fadeIn(200);
 		});
-		// Логика: базовая стоимость + площадь * ставка + опции. Все значения легко менять в switch/if.
+		// Логика: базовая стоимость услуги + дополнительные опции, с учетом скидок при больших объемах
 
 		// Плавный скролл для всех якорных ссылок
 		if ('scrollBehavior' in document.documentElement.style) {
@@ -406,5 +485,55 @@ $(function() {
 				console.log('Service contact error', res, val);
 			}
 		});
-	});    
+
+		// Логика модального окна викторины
+		$('#quiz-btn').on('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			$('#quiz-modal').fadeIn(200);
+		});
+
+		$('#quiz-close, #quiz-modal .modal-overlay').on('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			if ($(e.target).is('#quiz-modal, #quiz-close, .modal-overlay')) {
+				$('#quiz-modal').fadeOut(200);
+			}
+		});
+
+		// Копирование email
+		$('#quiz-copy-email').on('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			const email = 'K1Aleks@yandex.ru';
+			navigator.clipboard.writeText(email).then(() => {
+				const originalText = $(this).text();
+				$(this).text('✅ Email скопирован!');
+				setTimeout(() => {
+					$(this).text(originalText);
+				}, 2000);
+			});
+		});
+
+		// Копирование кода
+		$('#quiz-copy-code').on('click', function(e) {
+			e.preventDefault();
+			e.stopPropagation();
+			const code = '6a4d-cc92-724c-f7bf';
+			navigator.clipboard.writeText(code).then(() => {
+				const originalText = $(this).text();
+				$(this).text('✅ Код скопирован!');
+				setTimeout(() => {
+					$(this).text(originalText);
+				}, 2000);
+			});
+		});
+
+		// Закрытие модального окна по клавише Escape
+		$(document).on('keydown', function(e) {
+			if (e.key === 'Escape' && $('#quiz-modal').is(':visible')) {
+				$('#quiz-modal').fadeOut(200);
+			}
+		});
+	});
 });

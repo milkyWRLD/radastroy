@@ -1164,7 +1164,7 @@ a.btn-grey:active  {
     display: none;
 }
 #block-pricelist {
-	background-color: #f4f5f2;
+	background-color: #e0e7ff;
 	padding: 70px 0 80px 0;
 	text-align: center;
 }
@@ -1198,10 +1198,12 @@ a.btn-grey:active  {
 #block-pricelist .price-item {
 	width: 95%;
 	padding: 0 10px 10px 10px;
-	display: block;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
 	font-size: 15px;
-	margin: 0 auto;
-	margin-bottom: 13px;
+	margin: 0 auto 13px auto;
 }
 #block-pricelist td.left-items .price-item{
 	margin: 0 0 13px 0;
@@ -1211,17 +1213,11 @@ a.btn-grey:active  {
 }
 #block-pricelist .border-bottom {
 	margin-bottom: 0;
-}
-#block-pricelist .border-bottom:after {
-	content: '';
-	height: 1px;
-	width: 95%; 
-	margin: 10px 0 0;
-	display: block;
-	background: url("../img/line-sm.png")
+	padding-bottom: 10px;
+	border-bottom: 1px dotted #d0d0d0;
 }
 #block-pricelist .price-item .left {
-	float: left;
+	flex: 1;
 	max-width: 100%;
 	text-align: left;
 }
@@ -1231,7 +1227,10 @@ a.btn-grey:active  {
 	margin: 5px 0 0;
 }
 #block-pricelist .price-item .right {
-	float: right;
+	flex-shrink: 0;
+	white-space: nowrap;
+	margin-left: 10px;
+	font-weight: 600;
 }
 #block-pricelist .bonuses {
 	width: 100%;
@@ -1255,7 +1254,7 @@ a.btn-grey:active  {
 	letter-spacing: 2px;
 	text-transform: uppercase;
 	font-weight: 700;
-	background: #f4f5f2;
+	background: #e0e7ff;
 	display: block;
 	z-index: 2;
 	left: calc(50% - 125px);
@@ -1377,7 +1376,7 @@ a.btn-grey:active  {
 /* ==================== block-anyquestions ============*/
 #block-anyquestions {
 	width: 100%;
-	background-color: #f4f5f2;
+	background-color: #e0e7ff;
 	/* remove horizontal padding so centered inner block isn't offset */
 	padding: 40px 0 56px;
 }
@@ -1603,7 +1602,7 @@ a.btn-grey:active  {
 }
 #floating-contacts {
 	font-family: 'Montserrat', Arial, sans-serif;
-	background: rgba(255,255,255,0.82);
+	background: rgba(255,255,255,0.15);
 	border-radius: 24px;
 	box-shadow: 0 2px 8px rgba(30,64,175,0.10);
 	padding: 7px 12px;
@@ -1612,10 +1611,9 @@ a.btn-grey:active  {
 	align-items: center;
 	font-size: 1rem;
 	z-index: 9999;
-	border: 1px solid #e0e7ff;
-	opacity: 0.85;
+	border: 1px solid rgba(255, 255, 255, 0.3);
 	transition: opacity 0.2s;
-	backdrop-filter: blur(4px);
+	backdrop-filter: blur(8px);
 	position: fixed;
 	bottom: 18px;
 	right: 18px;
