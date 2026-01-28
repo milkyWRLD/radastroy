@@ -250,15 +250,46 @@ $(function() {
 				} catch (err) { console.error('Burger init error', err); }
 			})();
 
-		$("#popup_present_form").ajaxForm({
-			success: function(responseText) {
-				// Добавляем цель в яндекс.метрику
-				yaCounter38407175.reachGoal('SubmitPresentForm');
-			},
-			error: function(res, val) {
-				console.log(res);
-				console.log(val);
+		// AJAX форма отправки заявки - работает и на локальном сервере и на Vercel
+		$("#popup_present_form").on('submit', function(e) {
+			e.preventDefault();
+			
+			const form = $(this);
+			const formData = {
+				name: form.find('[name="name"]').val(),
+				phone: form.find('[name="phone"]').val(),
+				service_requested: form.find('[name="service_requested"]').val()
+			};
+
+			// Проверка данных
+			if (!formData.name || !formData.phone) {
+				alert('Пожалуйста, заполните все поля!');
+				return;
 			}
+
+			// Отправляем на API
+			$.ajax({
+				type: 'POST',
+				url: '/api/mail',  // Vercel API функция
+				contentType: 'application/json',
+				data: JSON.stringify(formData),
+				success: function(response) {
+					console.log('Success:', response);
+					// Очищаем форму
+					form[0].reset();
+					// Показываем успех
+					$('.popup_success').fadeIn();
+					$('.overlay').fadeOut();
+					$('.popup_present').fadeOut();
+					// Analytics
+					yaCounter38407175.reachGoal('SubmitPresentForm');
+					ga('send', 'event', 'forma', 'zakaz');
+				},
+				error: function(xhr, status, error) {
+					console.log('Error:', error);
+					alert('Ошибка отправки. Попробуйте еще раз или позвоните нам.');
+				}
+			});
 		});
 
 		// Карусель отзывов и кейсов

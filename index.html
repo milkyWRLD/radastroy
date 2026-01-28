@@ -1102,14 +1102,13 @@
 		
 	<div class="popup_present">
 		<div class="title">Напишите нам</div>
-		<form id="popup_present_form" method="post" action="/mail.php">
+		<form id="popup_present_form">
 			<div class="popup_present-form-elements">
-				<div><input type="text" value="" name="name" placeholder="ИМЯ" /></div>
-				<div><input type="text" value="" name="phone" placeholder="ТЕЛЕФОН" /></div>
+				<div><input type="text" value="" name="name" placeholder="ИМЯ" required /></div>
+				<div><input type="text" value="" name="phone" placeholder="ТЕЛЕФОН" required /></div>
 				<!-- hidden contextual fields populated when opened from service modal -->
 				<input type="hidden" name="service_requested" value="">
-				<input type="hidden" name="to" value="K1Aleks@yandex.ru">
-				<div><input type="submit" id="submitPresentForm" value="Отправить" onclick="ga('send', 'event', 'forma', 'zakaz'); yaCounter38407175.reachGoal('zakaz'); return true;"></div>
+				<div><input type="submit" id="submitPresentForm" value="Отправить"></div>
 			</div>            
 		</form>    
 		<div class="popup_present-form-description">Наш менеджер свяжется с вами в ближайшее время</div>
