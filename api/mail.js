@@ -4,7 +4,7 @@
 const formData = require('form-data');
 const Mailgun = require('mailgun.js');
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Разрешаем CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -110,3 +110,6 @@ async function saveToFile(name, phone, service, res) {
     log: log
   });
 }
+
+// Export handler as CommonJS for Vercel Node runtime
+module.exports = handler;
