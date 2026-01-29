@@ -155,7 +155,11 @@ async function sendViaResend(name, phone, service, res) {
   if (response.ok) {
     return res.status(200).json({ success: true, message: 'Заявка отправлена! Мы вскоре свяжемся с вами.' });
   } else {
-    throw new Error('Failed to send via Resend');
+    let text = '';
+    try { text = await response.text(); } catch (e) { text = String(e); }
+    const msg = `Resend error: ${response.status} ${response.statusText} - ${text}`;
+    console.error(msg);
+    throw new Error(msg);
   }
 }
 

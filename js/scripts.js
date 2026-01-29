@@ -267,29 +267,35 @@ $(function() {
 				return;
 			}
 
-			// Отправляем на API
-			$.ajax({
-				type: 'POST',
-				url: '/api/mail',  // Vercel API функция
-				contentType: 'application/json',
-				data: JSON.stringify(formData),
-				success: function(response) {
-					console.log('Success:', response);
-					// Очищаем форму
-					form[0].reset();
-					// Показываем успех
-					$('.popup_success').fadeIn();
-					$('.overlay').fadeOut();
-					$('.popup_present').fadeOut();
-					// Analytics
-					yaCounter38407175.reachGoal('SubmitPresentForm');
-					ga('send', 'event', 'forma', 'zakaz');
-				},
-				error: function(xhr, status, error) {
-					console.log('Error:', error);
-					alert('Ошибка отправки. Попробуйте еще раз или позвоните нам.');
-				}
-			});
+			// Отправляем на API через fetch (более предсказуемо и не зависит от jquery.form)
+			const submitBtn = form.find('button[type="submit"], input[type="submit"]').first();
+			try {
+				if (submitBtn && submitBtn.length) submitBtn.prop('disabled', true);
+			} catch (e) {}
+
+			fetch('/api/mail', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(formData)
+			})
+			.then(async (r) => {
+				const text = await r.text();
+				let json = {};
+				try { json = JSON.parse(text); } catch (e) { json = { raw: text }; }
+				if (!r.ok) throw { status: r.status, body: json };
+				console.log('Success:', json);
+				form[0].reset();
+				$('.popup_success').fadeIn();
+				$('.overlay').fadeOut();
+				$('.popup_present').fadeOut();
+				try { yaCounter38407175.reachGoal('SubmitPresentForm'); } catch (e) {}
+				try { ga('send', 'event', 'forma', 'zakaz'); } catch (e) {}
+			})
+			.catch((err) => {
+				console.error('Error sending form:', err);
+				alert('Ошибка отправки. Попробуйте еще раз или позвоните нам.');
+			})
+			.finally(() => { try { if (submitBtn && submitBtn.length) submitBtn.prop('disabled', false); } catch (e) {} });
 		});
 
 		// Карусель отзывов и кейсов
