@@ -20,7 +20,34 @@ async function handler(req, res) {
 
   // Read/parse JSON body reliably (Vercel sometimes doesn't populate req.body)
   async function parseJsonBody(req) {
+    // If Vercel/Express already parsed body as object
     if (req.body && typeof req.body === 'object') return req.body;
+
+    // If body is a JSON string (some runtimes provide req.body as string)
+    if (req.body && typeof req.body === 'string') {
+      try { return JSON.parse(req.body); } catch (e) { /* fallthrough */ }
+    }
+
+    // If Vercel provides rawBody
+    if (req.rawBody) {
+      try { return JSON.parse(req.rawBody); } catch (e) { /* fallthrough */ }
+    }
+
+    // If content-type is urlencoded, parse it
+    const ct = (req.headers && (req.headers['content-type'] || req.headers['Content-Type'])) || '';
+    if (ct.indexOf('application/x-www-form-urlencoded') !== -1) {
+      return await new Promise((resolve) => {
+        let data = '';
+        req.on && req.on('data', chunk => { data += chunk; });
+        req.on && req.on('end', () => {
+          try { resolve(Object.fromEntries(new URLSearchParams(data))); }
+          catch (err) { resolve({}); }
+        });
+        req.on && req.on('error', () => resolve({}));
+      });
+    }
+
+    // Fallback: read stream if available
     return await new Promise((resolve, reject) => {
       let data = '';
       req.on && req.on('data', chunk => { data += chunk; });
