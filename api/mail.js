@@ -26,22 +26,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Способ 1: Отправка через Mailgun API (нужна переменная окружения)
-    if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
-      return await sendViaMailgun(name, phone, service_requested, res);
-    }
-
-    // Способ 2: Отправка через Resend API (новый способ)
+    // Приоритет: RESEND -> MAILGUN -> fallback
     if (process.env.RESEND_API_KEY) {
       return await sendViaResend(name, phone, service_requested, res);
     }
 
-    // Способ 3: Сохранение в файл для отладки (если нет API ключей)
+    if (process.env.MAILGUN_API_KEY && process.env.MAILGUN_DOMAIN) {
+      return await sendViaMailgun(name, phone, service_requested, res);
+    }
+
+    // Fallback: логирование (подходит для демонстрации без ключей)
     return await saveToFile(name, phone, service_requested, res);
 
   } catch (error) {
     console.error('Error:', error);
-    return res.status(500).json({ error: 'Failed to send email', details: error.message });
+    return res.status(500).json({ error: 'Failed to send email', details: String(error && error.message ? error.message : error) });
   }
 }
 
@@ -50,9 +49,11 @@ async function sendViaMailgun(name, phone, service, res) {
   const mailgun = new Mailgun(formData);
   const client = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY });
   
+  const from = process.env.MAIL_FROM || 'noreply@rada-stroy.com';
+  const to = process.env.MAIL_TO || 'web_dev_artsid@gmail.com';
   const messageData = {
-    from: 'noreply@rada-stroy.com',
-    to: 'web_dev_artsid@gmail.com',
+    from: from,
+    to: to,
     subject: 'Заявка с сайта РадаСтрой',
     text: `Новая заявка с сайта!\n\nИмя: ${name}\nТелефон: ${phone}\n${service ? `Услуга: ${service}` : ''}\nДата: ${new Date().toLocaleString('ru-RU')}`
   };
@@ -76,8 +77,8 @@ async function sendViaResend(name, phone, service, res) {
       'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
     },
     body: JSON.stringify({
-      from: 'onboarding@resend.dev',
-      to: 'web_dev_artsid@gmail.com',
+      from: process.env.MAIL_FROM || 'onboarding@resend.dev',
+      to: process.env.MAIL_TO || 'web_dev_artsid@gmail.com',
       subject: 'Заявка с сайта РадаСтрой',
       html: `
         <h2>Новая заявка с сайта РадаСтрой</h2>
@@ -98,12 +99,14 @@ async function sendViaResend(name, phone, service, res) {
 
 // Сохранение в файл (fallback для тестирования)
 async function saveToFile(name, phone, service, res) {
-  // На Vercel нельзя писать в файловую систему, поэтому просто логируем
-  console.log(`Заявка: ${name}, ${phone}, ${service}, ${new Date().toISOString()}`);
-  
+  // На Vercel нельзя надежно писать в файловую систему, поэтому возвращаем debug-ответ
+  const log = `Заявка: ${name}, ${phone}, ${service}, ${new Date().toISOString()}`;
+  console.log(log);
+
   return res.status(200).json({ 
     success: true, 
-    message: 'Заявка принята! Настройте API ключ для отправки писем.',
-    debug: true
+    message: 'Заявка принята (логged). Для реальной отправки настройте RESEND_API_KEY или MAILGUN_API_KEY.',
+    debug: true,
+    log: log
   });
 }
