@@ -18,7 +18,16 @@ async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { name, phone, service_requested } = req.body;
+  // Log incoming headers/body for debugging
+  try { console.log('mail.handler headers:', req.headers); } catch(e){}
+  try { console.log('mail.handler body:', req.body); } catch(e){}
+
+  // Debug shortcut: if DEBUG_MAIL=1 return received headers/body
+  if (process.env.DEBUG_MAIL === '1') {
+    return res.status(200).json({ headers: req.headers || {}, body: req.body || null });
+  }
+
+  const { name, phone, service_requested } = req.body || {};
 
   // Проверка данных
   if (!name || !phone) {
