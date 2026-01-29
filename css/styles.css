@@ -1874,7 +1874,7 @@ form.order-form button:hover {
 }
 #block-pricelist .bonus-list li:before {
 	content: '';
-	background: url("../img/ok-sm.png") no-repeat 0 0;
+	background: url("../img/line-sm.png") no-repeat 0 0;
 	width: 17px;
 	height: 13px;
 	display: block;

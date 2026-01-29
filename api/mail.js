@@ -18,16 +18,33 @@ async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Read/parse JSON body reliably (Vercel sometimes doesn't populate req.body)
+  async function parseJsonBody(req) {
+    if (req.body && typeof req.body === 'object') return req.body;
+    return await new Promise((resolve, reject) => {
+      let data = '';
+      req.on && req.on('data', chunk => { data += chunk; });
+      req.on && req.on('end', () => {
+        if (!data) return resolve({});
+        try { resolve(JSON.parse(data)); }
+        catch (err) { return resolve({}); }
+      });
+      req.on && req.on('error', err => reject(err));
+    });
+  }
+
+  const parsedBody = await parseJsonBody(req).catch(err => ({}));
+
   // Log incoming headers/body for debugging
   try { console.log('mail.handler headers:', req.headers); } catch(e){}
-  try { console.log('mail.handler body:', req.body); } catch(e){}
+  try { console.log('mail.handler parsed body:', parsedBody); } catch(e){}
 
   // Debug shortcut: if DEBUG_MAIL=1 return received headers/body
   if (process.env.DEBUG_MAIL === '1') {
-    return res.status(200).json({ headers: req.headers || {}, body: req.body || null });
+    return res.status(200).json({ headers: req.headers || {}, body: parsedBody || req.body || null });
   }
 
-  const { name, phone, service_requested } = req.body || {};
+  const { name, phone, service_requested } = parsedBody || req.body || {};
 
   // Проверка данных
   if (!name || !phone) {
@@ -77,9 +94,18 @@ async function sendViaMailgun(name, phone, service, res) {
 
 // Отправка через Resend
 async function sendViaResend(name, phone, service, res) {
-  const fetch = (await import('node-fetch')).default;
-  
-  const response = await fetch('https://api.resend.com/emails', {
+  let fetchFn = null;
+  if (typeof fetch !== 'undefined') {
+    fetchFn = fetch;
+  } else {
+    try {
+      fetchFn = (await import('node-fetch')).default;
+    } catch (err) {
+      throw new Error('fetch is not available in runtime and node-fetch could not be imported');
+    }
+  }
+
+  const response = await fetchFn('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
